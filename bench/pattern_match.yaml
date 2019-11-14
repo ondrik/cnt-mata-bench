@@ -1,0 +1,14 @@
+grep:
+  cmd: ../bin/egrep -c $1 $2
+
+re2g:
+  cmd: ../bin/re2g -c $1 $2
+
+srm:
+  # cmd: ../bin/srm $1 $2
+  # cmd: ../bin/egrep -c $1 $2
+  cmd: mono ../bin/CounterAutomataBench.exe --margus $1 $2
+
+cnt-set-mata:
+  # cmd: ../bin/cnt-set-mata $1 $2
+  cmd: mono ../bin/CounterAutomataBench.exe --chipmunk $1 $2

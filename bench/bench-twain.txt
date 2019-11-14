@@ -1,0 +1,15 @@
+Twain ../dataset-twain/corpus-twain.txt
+(?i)Twain ../dataset-twain/corpus-twain.txt
+[a-z]shing ../dataset-twain/corpus-twain.txt
+Huck[a-zA-Z]+|Saw[a-zA-Z]+ ../dataset-twain/corpus-twain.txt
+[a-q][^u-z]{13}x ../dataset-twain/corpus-twain.txt
+Tom|Sawyer|Huckleberry|Finn ../dataset-twain/corpus-twain.txt
+(?i)Tom|Sawyer|Huckleberry|Finn ../dataset-twain/corpus-twain.txt
+.{0,2}(Tom|Sawyer|Huckleberry|Finn) ../dataset-twain/corpus-twain.txt
+.{2,4}(Tom|Sawyer|Huckleberry|Finn) ../dataset-twain/corpus-twain.txt
+Tom.{10,25}river|river.{10,25}Tom ../dataset-twain/corpus-twain.txt
+[a-zA-Z]+ing ../dataset-twain/corpus-twain.txt
+\s[a-zA-Z]{0,12}ing\s ../dataset-twain/corpus-twain.txt
+([A-Za-z]awyer|[A-Za-z]inn)\s ../dataset-twain/corpus-twain.txt
+["'][^"']{0,30}[?!\.][\"'] ../dataset-twain/corpus-twain.txt
+\p{Sm} ../dataset-twain/corpus-twain.txt
