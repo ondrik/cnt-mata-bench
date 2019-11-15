@@ -34,6 +34,7 @@ import argparse
 import csv
 import os
 import queue
+import re
 import resource
 import subprocess
 import sys
@@ -58,6 +59,51 @@ g_tasks = 'pycobench.tasks'
 
 # results file
 g_results = 'pycobench-results.csv'
+
+# the command to measure CPU time
+g_time_cmd = '/usr/bin/time'
+
+
+###########################################
+def run_subproc(cmd):
+    """run_subproc(cmd) -> dict()
+
+Runs a command as a subprocess and collects results.
+"""
+    rusage_before = resource.getrusage(resource.RUSAGE_CHILDREN)
+    proc = subprocess.run(cmd, timeout=g_timeout, capture_output=True)
+    rusage_after = resource.getrusage(resource.RUSAGE_CHILDREN)
+    result = {}
+    result['returncode'] = proc.returncode
+    result['stdout'] = proc.stdout.decode().strip()
+    result['stderr'] = proc.stderr.decode().strip()
+
+    result['time'] = rusage_after.ru_utime - rusage_before.ru_utime
+    return result
+
+
+###########################################
+def run_subproc_systime(cmd):
+    """run_subproc(cmd) -> dict()
+
+Runs a command as a subprocess and collects results.
+"""
+    global g_time_cmd
+    cmd = [g_time_cmd] + cmd
+    proc = subprocess.run(cmd, timeout=g_timeout, capture_output=True)
+    result = {}
+    result['returncode'] = proc.returncode
+    result['stdout'] = proc.stdout.decode().strip()
+    result['stderr'] = proc.stderr.decode().strip()
+
+    stderr_split = result['stderr'].splitlines()
+    for line in stderr_split:
+        mtch = re.search(r'(?P<time>\d+\.\d+) user', line)
+        if mtch:
+            result['time'] = float(mtch['time'])
+
+    return result
+
 
 ###########################################
 def execute_benchmark(params):
@@ -87,17 +133,19 @@ Executes one benchmark.
                 cmd[i] = in_params[x-1]
 
     try:
-        rusage_before = resource.getrusage(resource.RUSAGE_CHILDREN)
-        proc = subprocess.run(cmd, timeout=g_timeout, capture_output=True)
-        rusage_after = resource.getrusage(resource.RUSAGE_CHILDREN)
-        result = {}
-        result['returncode'] = proc.returncode
-        result['stdout'] = proc.stdout.decode().strip()
-        result['stderr'] = proc.stderr.decode().strip()
-
-
-        result['time'] = rusage_after.ru_utime - rusage_before.ru_utime
+        # result = run_subproc(cmd)
+        result = run_subproc_systime(cmd)
         return result
+        # rusage_before = resource.getrusage(resource.RUSAGE_CHILDREN)
+        # proc = subprocess.run(cmd, timeout=g_timeout, capture_output=True)
+        # rusage_after = resource.getrusage(resource.RUSAGE_CHILDREN)
+        # result = {}
+        # result['returncode'] = proc.returncode
+        # result['stdout'] = proc.stdout.decode().strip()
+        # result['stderr'] = proc.stderr.decode().strip()
+        #
+        # result['time'] = rusage_after.ru_utime - rusage_before.ru_utime
+        # return result
     except subprocess.TimeoutExpired:
         return 'Timeout'
 

@@ -45,7 +45,8 @@ def proc_res(fd):
 
     header = ['pattern'] + engines + engines_match
 
-    print(tabulate(list_ptrns, header, tablefmt='html'))
+    # print(tabulate(list_ptrns, header, tablefmt='html'))
+    print(tabulate(list_ptrns, header, tablefmt='text'))
     return
 
 
