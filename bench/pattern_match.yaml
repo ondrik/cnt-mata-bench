@@ -5,10 +5,46 @@ re2g:
   cmd: ../bin/re2g -c $1 $2
 
 srm:
-  # cmd: ../bin/srm $1 $2
-  # cmd: ../bin/egrep -c $1 $2
-  cmd: mono ../bin/CounterAutomataBench.exe --margus $1 $2
+  cmd: mono ../bin/CA2/CounterAutomataBench.exe --margus $1 $2
 
-cnt-set-mata:
-  # cmd: ../bin/cnt-set-mata $1 $2
-  cmd: mono ../bin/CounterAutomataBench.exe --chipmunk $1 $2
+dot-net:
+  cmd: mono ../bin/CA2/CounterAutomataBench.exe --regex $1 $2
+
+# ca1:
+#   cmd: mono ../bin/CA1/CounterAutomataBench.exe --chipmunk $1 $2
+#
+# ca2:
+#   cmd: mono ../bin/CA2/CounterAutomataBench.exe --chipmunk $1 $2
+#
+# ca4:
+#   cmd: mono ../bin/CA4/CounterAutomataBench.exe --chipmunk $1 $2
+#
+# ca5:
+#   cmd: mono ../bin/CA5/CounterAutomataBench.exe --chipmunk $1 $2
+#
+# ca6:
+#   cmd: mono ../bin/CA6/CounterAutomataBench.exe --chipmunk $1 $2
+
+ca7:
+  cmd: mono ../bin/CA7/CounterAutomataBench.exe --chipmunk $1 $2
+
+ca8:
+  cmd: mono ../bin/CA8/CounterAutomataBench.exe --chipmunk $1 $2
+
+ca9:
+  cmd: mono ../bin/CA9/CounterAutomataBench.exe --chipmunk $1 $2
+
+ca10:
+  cmd: mono ../bin/CA10/CounterAutomataBench.exe --chipmunk $1 $2
+
+ca11:
+  cmd: mono ../bin/CA11/CounterAutomataBench.exe --chipmunk $1 $2
+
+ca12:
+  cmd: mono ../bin/CA12/CounterAutomataBench.exe --chipmunk $1 $2
+
+ca13:
+  cmd: mono ../bin/CA13/CounterAutomataBench.exe --chipmunk $1 $2
+
+ca14:
+  cmd: mono ../bin/CA14/CounterAutomataBench.exe --chipmunk $1 $2

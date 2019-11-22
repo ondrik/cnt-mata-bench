@@ -1,8 +1,12 @@
 #!/usr/bin/env python3
 
+import argparse
 import csv
 import sys
 from tabulate import tabulate
+
+fmt = 'text'
+# fmt = 'csv'
 
 ###########################################
 def proc_res(fd):
@@ -17,16 +21,26 @@ def proc_res(fd):
     engines_match = list()
     results = dict()
     for row in reader:
+        eng, pattern = row[1], row[2]
+        pattern = pattern.split(' ')[0]
+        if pattern not in results:
+            results[pattern] = dict()
+        if eng not in engines:
+            engines.append(eng)
+            engines_match.append(eng + '-matches')
+
         if row[0] == 'finished':
-            eng, pattern, count_lines, run_time = row[1], row[2], row[4], row[6]
-            pattern = pattern.split(' ')[0]
-            if pattern not in results:
-                results[pattern] = dict()
-            if eng not in engines:
-                engines.append(eng)
-                engines_match.append(eng + '-matches')
+            count_lines, run_time = row[4], row[6]
             results[pattern][eng] = run_time
             results[pattern][eng + '-matches'] = count_lines
+
+        if row[0] == 'error':
+            results[pattern][eng] = 'ERR'
+            results[pattern][eng + '-matches'] = 'ERR'
+
+        if row[0] == 'timeout':
+            results[pattern][eng] = 'TO'
+            results[pattern][eng + '-matches'] = 'TO'
 
     list_ptrns = list()
     for ptrn in results:
@@ -45,8 +59,17 @@ def proc_res(fd):
 
     header = ['pattern'] + engines + engines_match
 
-    # print(tabulate(list_ptrns, header, tablefmt='html'))
-    print(tabulate(list_ptrns, header, tablefmt='text'))
+    if fmt == 'html':
+        print(tabulate(list_ptrns, header, tablefmt='html'))
+    elif fmt == 'text':
+        print(tabulate(list_ptrns, header, tablefmt='text'))
+    elif fmt == 'csv':
+        writer = csv.writer(
+            sys.stdout, delimiter=';', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+        writer.writerow(header)
+        writer.writerows(list_ptrns)
+    else:
+        raise Exception('Invalid output format: "{}"'.format(fmt))
     return
 
 

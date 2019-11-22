@@ -51,7 +51,7 @@ g_result_queue = queue.Queue()
 g_cmd_dict = { }
 
 # timeout for subprocesses (in seconds)
-g_timeout = 600
+g_timeout = 60
 
 # The file that contains information about submitted and finished tasks.  This
 # can be later used for restarting a prematurely stopped benchmark.
@@ -74,7 +74,7 @@ Runs a command as a subprocess and collects results.
     proc = subprocess.run(cmd, timeout=g_timeout, capture_output=True)
     rusage_after = resource.getrusage(resource.RUSAGE_CHILDREN)
     result = {}
-    result['returncode'] = proc.returncode
+    result['retcode'] = proc.returncode
     result['stdout'] = proc.stdout.decode().strip()
     result['stderr'] = proc.stderr.decode().strip()
 
@@ -92,7 +92,7 @@ Runs a command as a subprocess and collects results.
     cmd = [g_time_cmd] + cmd
     proc = subprocess.run(cmd, timeout=g_timeout, capture_output=True)
     result = {}
-    result['returncode'] = proc.returncode
+    result['retcode'] = proc.returncode
     result['stdout'] = proc.stdout.decode().strip()
     result['stderr'] = proc.stderr.decode().strip()
 
@@ -136,18 +136,8 @@ Executes one benchmark.
         # result = run_subproc(cmd)
         result = run_subproc_systime(cmd)
         return result
-        # rusage_before = resource.getrusage(resource.RUSAGE_CHILDREN)
-        # proc = subprocess.run(cmd, timeout=g_timeout, capture_output=True)
-        # rusage_after = resource.getrusage(resource.RUSAGE_CHILDREN)
-        # result = {}
-        # result['returncode'] = proc.returncode
-        # result['stdout'] = proc.stdout.decode().strip()
-        # result['stderr'] = proc.stderr.decode().strip()
-        #
-        # result['time'] = rusage_after.ru_utime - rusage_before.ru_utime
-        # return result
     except subprocess.TimeoutExpired:
-        return 'Timeout'
+        return {'timeout': True}
 
 ###########################################
 def merge_two_dicts(x, y):
@@ -177,11 +167,15 @@ def process_result(writer, result):
 
 Processes one obtained result (writes it using writer).
 """
-    str_stdout = result['stdout'].replace('\n','###')
-    str_stderr = result['stderr'].replace('\n','###')
-    writer.writerow(['finished', result['method'], result['params'],
-        result['returncode'], str_stdout, str_stderr,
-        result['time']])
+    if 'timeout' in result:
+        writer.writerow(['timeout', result['method'], result['params']])
+    else:
+        str_stdout = result['stdout'].replace('\n','###')
+        str_stderr = result['stderr'].replace('\n','###')
+        status = 'finished' if result['retcode'] == 0 else 'error'
+        writer.writerow([status, result['method'], result['params'],
+            result['retcode'], str_stdout, str_stderr,
+            result['time']])
     print(str(result))
 
 

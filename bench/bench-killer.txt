@@ -1,0 +1,2 @@
+a.{250}$ ../dataset-killer/corpus-killer.txt
+a\(..................\){250}$ ../dataset-killer/corpus-killer.txt

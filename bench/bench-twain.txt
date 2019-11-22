@@ -13,3 +13,5 @@ Tom.{10,25}river|river.{10,25}Tom ../dataset-twain/corpus-twain.txt
 ([A-Za-z]awyer|[A-Za-z]inn)\s ../dataset-twain/corpus-twain.txt
 ["'][^"']{0,30}[?!\.][\"'] ../dataset-twain/corpus-twain.txt
 \p{Sm} ../dataset-twain/corpus-twain.txt
+a.{32} ../dataset-twain/corpus-twain.txt
+.*---[a-zA-Z0-9/+]{200,1000}[a-zA-Z0-9/+](()|=|==).* ../dataset-twain/corpus-twain.txt
