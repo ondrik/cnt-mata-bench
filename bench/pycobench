@@ -63,6 +63,11 @@ g_results = 'pycobench-results.csv'
 # the command to measure CPU time
 g_time_cmd = '/usr/bin/time'
 
+# the number of tasks that are to be run
+g_cnt_tasks = 0
+
+# the number of tasks that have finished
+g_cnt_finished_tasks = 0
 
 ###########################################
 def run_subproc(cmd):
@@ -71,7 +76,8 @@ def run_subproc(cmd):
 Runs a command as a subprocess and collects results.
 """
     rusage_before = resource.getrusage(resource.RUSAGE_CHILDREN)
-    proc = subprocess.run(cmd, timeout=g_timeout, capture_output=True)
+    # proc = subprocess.run(cmd, timeout=g_timeout, capture_output=True)
+    proc = subprocess.run(cmd, timeout=g_timeout, stdout=PIPE, stderr=PIPE)
     rusage_after = resource.getrusage(resource.RUSAGE_CHILDREN)
     result = {}
     result['retcode'] = proc.returncode
@@ -116,7 +122,7 @@ Executes one benchmark.
     in_params = params['params']
     cmd = g_cmd_dict[name]['cmd']
     cmd = cmd.split()
-    in_params = in_params.split()
+    # in_params = in_params.split()
 
     # substitute $1, $2, etc. with the real parameters
     for i in range(len(cmd)):
@@ -162,21 +168,36 @@ Main function of a thread for processing tasks.
 
 
 ###########################################
-def process_result(writer, result):
-    """process_result(writer, result) -> None
+def process_result(writer, task_file, result):
+    """process_result(writer, task_file, result) -> None
 
-Processes one obtained result (writes it using writer).
+Processes one obtained result (writes it using writer [and flushes, as a good
+christian]).
 """
+    res_string = "UNKNOWN";
     if 'timeout' in result:
         writer.writerow(['timeout', result['method'], result['params']])
+        task_file.flush()
+        res_string = 'TIMEOUT'
     else:
         str_stdout = result['stdout'].replace('\n','###')
         str_stderr = result['stderr'].replace('\n','###')
-        status = 'finished' if result['retcode'] == 0 else 'error'
+        status = 'finished'
+        res_string = 'FINISHED \tResult: {}\tTime: {}'.format(result['retcode'], result['time'])
+
         writer.writerow([status, result['method'], result['params'],
             result['retcode'], str_stdout, str_stderr,
             result['time']])
-    print(str(result))
+        task_file.flush()
+
+    global g_cnt_finished_tasks
+    g_cnt_finished_tasks += 1
+    print(str("{}/{}\t{}\t{}:\t{}".format(
+        g_cnt_finished_tasks,
+        g_cnt_tasks,
+        result['method'],
+        result['params'],
+        res_string)))
 
 
 ###########################################
@@ -243,14 +264,24 @@ Runs the main program according to the arguments obtained from the parser.
         list_of_tasks = prepare_list_of_tasks_from_tasklist(args.tasklist)
     else:  # take the tasks from stdin
         # processing the input
-        for line in sys.stdin:
-            line = line.rstrip()
+        if False:  # changed to CSV reader
+            for line in sys.stdin:
+                line = line.rstrip()
+                for k in g_cmd_dict:
+                    list_of_tasks.append({'method': k, 'params': line})
+        reader = csv.reader(sys.stdin, delimiter=';')
+        for line in reader:
             for k in g_cmd_dict:
                 list_of_tasks.append({'method': k, 'params': line})
+
+        # write into task_file what we're executing
         with open(g_tasks, 'w') as task_file:
             writer = create_writer(task_file)
             for task in list_of_tasks:
                 writer.writerow(['execute', task['method'], task['params']])
+
+    global g_cnt_tasks
+    g_cnt_tasks = len(list_of_tasks)
 
     # set the number of workers
     num_worker_threads = args.jobs
@@ -284,7 +315,7 @@ Runs the main program according to the arguments obtained from the parser.
                 finished_workers += 1
                 continue
             else:
-                process_result(writer, result)
+                process_result(writer, task_file, result)
 
     # a barrier
     for t in threads:
