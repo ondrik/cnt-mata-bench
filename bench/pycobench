@@ -61,7 +61,7 @@ g_tasks = 'pycobench.tasks'
 g_results = 'pycobench-results.csv'
 
 # the command to measure CPU time
-g_time_cmd = '/usr/bin/time'
+g_time_cmd = ['/usr/bin/time', '-p']
 
 # the number of tasks that are to be run
 g_cnt_tasks = 0
@@ -94,8 +94,7 @@ def run_subproc_systime(cmd):
 
 Runs a command as a subprocess and collects results.
 """
-    global g_time_cmd
-    cmd = [g_time_cmd] + cmd
+    cmd = g_time_cmd + cmd
     # proc = subprocess.run(cmd, timeout=g_timeout, capture_output=True)
     proc = subprocess.run(cmd, timeout=g_timeout, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     result = {}
@@ -105,9 +104,12 @@ Runs a command as a subprocess and collects results.
 
     stderr_split = result['stderr'].splitlines()
     for line in stderr_split:
-        mtch = re.search(r'(?P<time>\d+\.\d+) user', line)
+        mtch = re.search(r'user\s+(?P<time>\d+\.\d+)', line)
         if mtch:
             result['time'] = float(mtch['time'])
+
+    if 'time' not in result:
+        raise Exception("Could not extract measured time")
 
     return result
 
