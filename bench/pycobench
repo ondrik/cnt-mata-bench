@@ -77,7 +77,7 @@ Runs a command as a subprocess and collects results.
 """
     rusage_before = resource.getrusage(resource.RUSAGE_CHILDREN)
     # proc = subprocess.run(cmd, timeout=g_timeout, capture_output=True)
-    proc = subprocess.run(cmd, timeout=g_timeout, stdout=PIPE, stderr=PIPE)
+    proc = subprocess.run(cmd, timeout=g_timeout, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     rusage_after = resource.getrusage(resource.RUSAGE_CHILDREN)
     result = {}
     result['retcode'] = proc.returncode
@@ -97,7 +97,7 @@ Runs a command as a subprocess and collects results.
     global g_time_cmd
     cmd = [g_time_cmd] + cmd
     # proc = subprocess.run(cmd, timeout=g_timeout, capture_output=True)
-    proc = subprocess.run(cmd, timeout=g_timeout, stdout=PIPE, stderr=PIPE)
+    proc = subprocess.run(cmd, timeout=g_timeout, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     result = {}
     result['retcode'] = proc.returncode
     result['stdout'] = proc.stdout.decode().strip()
@@ -124,7 +124,6 @@ Executes one benchmark.
     cmd = g_cmd_dict[name]['cmd']
     cmd = cmd.split()
     # in_params = in_params.split()
-    print(params)
 
     # substitute $1, $2, etc. with the real parameters
     for i in range(len(cmd)):
