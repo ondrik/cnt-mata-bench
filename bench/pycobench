@@ -106,7 +106,7 @@ Runs a command as a subprocess and collects results.
     for line in stderr_split:
         mtch = re.search(r'user\s+(?P<time>\d+\.\d+)', line)
         if mtch:
-            result['time'] = float(mtch['time'])
+            result['time'] = float(mtch.group('time'))
 
     if 'time' not in result:
         raise Exception("Could not extract measured time")
