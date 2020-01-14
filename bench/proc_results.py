@@ -5,8 +5,8 @@ import csv
 import sys
 from tabulate import tabulate
 
-fmt = 'text'
-# fmt = 'csv'
+# fmt = 'text'
+fmt = 'csv'
 
 ###########################################
 def proc_res(fd):
@@ -22,7 +22,6 @@ def proc_res(fd):
     results = dict()
     for row in reader:
         eng, pattern = row[1], row[2]
-        pattern = pattern.split(' ')[0]
         if pattern not in results:
             results[pattern] = dict()
         if eng not in engines:
@@ -30,7 +29,8 @@ def proc_res(fd):
             engines_match.append(eng + '-matches')
 
         if row[0] == 'finished':
-            count_lines, run_time = row[4], row[6]
+            retcode, count_lines, run_time = row[3], row[4], row[6]
+
             results[pattern][eng] = run_time
             results[pattern][eng + '-matches'] = count_lines
 
