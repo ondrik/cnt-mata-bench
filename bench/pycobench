@@ -57,11 +57,13 @@ g_timeout = 60
 # can be later used for restarting a prematurely stopped benchmark.
 g_tasks = 'pycobench.tasks'
 
-# results file
-g_results = 'pycobench-results.csv'
-
 # the command to measure CPU time
 g_time_cmd = ['/usr/bin/time', '-p']
+
+# the command for hard timeout
+g_timeout_cmd = ['timeout', '-s', 'KILL']
+# the return code of the timeout command when it times out
+TIMEOUT_TIMEOUT_RETCODE = 124
 
 # the number of tasks that are to be run
 g_cnt_tasks = 0
@@ -95,12 +97,17 @@ def run_subproc_systime(cmd):
 Runs a command as a subprocess and collects results.
 """
     cmd = g_time_cmd + cmd
+    cmd = g_timeout_cmd + [str(g_timeout)] + cmd
     # proc = subprocess.run(cmd, timeout=g_timeout, capture_output=True)
     proc = subprocess.run(cmd, timeout=g_timeout, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     result = {}
     result['retcode'] = proc.returncode
     result['stdout'] = proc.stdout.decode().strip()
     result['stderr'] = proc.stderr.decode().strip()
+
+    #print("retcode: " + str(result['retcode']))
+    if result['retcode'] == TIMEOUT_TIMEOUT_RETCODE:
+        raise subprocess.TimeoutExpired
 
     stderr_split = result['stderr'].splitlines()
     for line in stderr_split:
@@ -262,6 +269,12 @@ Runs the main program according to the arguments obtained from the parser.
     with open(args.conf[0], 'r') as conf_file:
         process_conf_file(conf_file)
 
+    # process additional program parameters
+    global g_timeout
+    g_timeout = args.timeout
+    global g_tasks
+    g_tasks = args.output_file
+
     list_of_tasks = []   # this is where we keep the tasks that are to be procecessed
     if args.tasklist:   # we want to continue in a tasklist
         list_of_tasks = prepare_list_of_tasks_from_tasklist(args.tasklist)
@@ -276,11 +289,6 @@ Runs the main program according to the arguments obtained from the parser.
         for line in reader:
             for k in g_cmd_dict:
                 list_of_tasks.append({'method': k, 'params': line})
-
-        # non-default output
-        if args.output_file:
-            global g_tasks
-            g_tasks = args.output_file
 
         # write into task_file what we're executing
         with open(g_tasks, 'w') as task_file:
@@ -342,7 +350,11 @@ standard input''')
         help='''Specifying this argument continues execution of unfinished \
 tasks from %(metavar)s.  No input is read.''')
     parser.add_argument('-o', '--output', metavar='OUTPUT_FILE', dest='output_file',
+        default = g_tasks,
         help='The output file (default: %(default)s)')
+    parser.add_argument('-t', '--timeout', metavar='TIMEOUT', type=int,
+        dest='timeout', default = g_timeout,
+        help='The timeout in seconds (default: %(default)s)')
 
     args = parser.parse_args()
     run_main(args)
