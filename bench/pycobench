@@ -65,6 +65,9 @@ g_timeout_cmd = ['timeout', '-s', 'KILL']
 # the return code of the timeout command when it times out
 TIMEOUT_TIMEOUT_RETCODE = 124
 
+# limit on the size of an output on stdout and stderr
+OUTPUT_LIMIT = 16384
+
 # the number of tasks that are to be run
 g_cnt_tasks = 0
 
@@ -104,6 +107,10 @@ Runs a command as a subprocess and collects results.
     result['retcode'] = proc.returncode
     result['stdout'] = proc.stdout.decode().strip()
     result['stderr'] = proc.stderr.decode().strip()
+
+    # limit too big outputs
+    result['stdout'] = result['stdout'][:OUTPUT_LIMIT]
+    result['stderr'] = result['stderr'][:OUTPUT_LIMIT]
 
     #print("retcode: " + str(result['retcode']))
     if result['retcode'] == TIMEOUT_TIMEOUT_RETCODE:
