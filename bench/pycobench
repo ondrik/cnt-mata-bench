@@ -109,10 +109,9 @@ Runs a command as a subprocess and collects results.
     result['stderr'] = proc.stderr.decode().strip()
 
     # limit too big outputs
-    result['stdout'] = result['stdout'][:OUTPUT_LIMIT]
-    result['stderr'] = result['stderr'][:OUTPUT_LIMIT]
+    result['stdout'] = result['stdout'][-OUTPUT_LIMIT:]
+    result['stderr'] = result['stderr'][-OUTPUT_LIMIT:]
 
-    #print("retcode: " + str(result['retcode']))
     if result['retcode'] == TIMEOUT_TIMEOUT_RETCODE:
         raise subprocess.TimeoutExpired
 
@@ -123,7 +122,7 @@ Runs a command as a subprocess and collects results.
             result['time'] = float(mtch.group('time'))
 
     if 'time' not in result:
-        raise Exception("Could not extract measured time")
+        raise Exception("Could not extract measured time" + "\nretcode: " + str(result['retcode']) + "\nstdout: " + result['stdout'] + "\nstderr: " + result['stderr'])
 
     return result
 
