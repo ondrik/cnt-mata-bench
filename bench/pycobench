@@ -121,6 +121,9 @@ Runs a command as a subprocess and collects results.
     if result['retcode'] not in {0, 1}:
         raise Exception("Program error: " + result['stderr'])
 
+    if re.search(r'Invalid RE2: invalid repetition size', result['stderr']):
+        raise Exception("RE2 failure")
+
     stderr_split = result['stderr'].splitlines()
     for line in stderr_split:
         mtch = re.search(r'user\s+(?P<time>\d+\.\d+)', line)
