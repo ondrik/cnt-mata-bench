@@ -68,6 +68,9 @@ TIMEOUT_TIMEOUT_RETCODE = 124
 # limit on the size of an output on stdout and stderr
 OUTPUT_LIMIT = 16384
 
+# delimiter for time: min<delim>sec
+TIME_DELIMITER = ','
+
 # the number of tasks that are to be run
 g_cnt_tasks = 0
 
@@ -125,7 +128,10 @@ Runs a command as a subprocess and collects results.
             result['time'] = float(mtch.group('time'))
 
     if 'time' not in result:
-        raise Exception("Could not extract measured time" + "\nretcode: " + str(result['retcode']) + "\nstdout: " + result['stdout'] + "\nstderr: " + result['stderr'])
+        raise Exception("Could not extract measured time\n" +
+            "retcode: " + str(result['retcode']) + "\n" +
+            "stdout: " + result['stdout'] + "\n" +
+            "stderr: " + result['stderr'])
 
     return result
 
@@ -208,11 +214,13 @@ christian]).
         str_stdout = result['stdout'].replace('\n','###')
         str_stderr = result['stderr'].replace('\n','###')
         status = 'finished'
-        res_string = 'FINISHED \tResult: {}\tTime: {}'.format(result['retcode'], result['time'])
+        time_str = str(result['time'])
+        time_str = time_str.replace('.', TIME_DELIMITER)
+        res_string = 'FINISHED \tResult: {}\tTime: {}'.format(result['retcode'], time_str)
 
         writer.writerow([status, result['method'], result['params'],
             result['retcode'], str_stdout, str_stderr,
-            result['time']])
+            time_str])
         task_file.flush()
 
     global g_cnt_finished_tasks
