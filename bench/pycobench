@@ -206,11 +206,11 @@ christian]).
 """
     res_string = "UNKNOWN";
     if 'timeout' in result:
-        writer.writerow(['timeout', result['method'], result['params']])
+        writer.writerow(['timeout', result['method']] + result['params'])
         task_file.flush()
         res_string = 'TIMEOUT'
     elif 'error' in result:
-        writer.writerow(['error', result['method'], result['params']])
+        writer.writerow(['error', result['method']] + result['params'])
         task_file.flush()
         res_string = 'ERROR'
     else:
@@ -221,8 +221,8 @@ christian]).
         time_str = time_str.replace('.', TIME_DELIMITER)
         res_string = 'FINISHED \tResult: {}\tTime: {}'.format(result['retcode'], time_str)
 
-        writer.writerow([status, result['method'], result['params'],
-            result['retcode'], str_stdout, str_stderr,
+        writer.writerow([status, result['method']] + result['params'] +
+            [result['retcode'], str_stdout, str_stderr,
             time_str])
         task_file.flush()
 
@@ -240,7 +240,9 @@ christian]).
 def create_writer(opened_file):
     """create_writer(opened_file) -> csv.Writer """
     writer = csv.writer(
-        opened_file, delimiter=';', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+        opened_file, delimiter=';', quotechar='"', doublequote=False,
+        escapechar='\\',
+        quoting=csv.QUOTE_MINIMAL)
     return writer
 
 
@@ -320,7 +322,7 @@ Runs the main program according to the arguments obtained from the parser.
         with open(g_tasks, 'w') as task_file:
             writer = create_writer(task_file)
             for task in list_of_tasks:
-                writer.writerow(['execute', task['method'], task['params']])
+                writer.writerow(['execute', task['method']] + task['params'])
 
     global g_cnt_tasks
     g_cnt_tasks = len(list_of_tasks)
