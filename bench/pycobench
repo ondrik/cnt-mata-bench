@@ -297,6 +297,21 @@ Runs the main program according to the arguments obtained from the parser.
     with open(args.conf[0], 'r') as conf_file:
         process_conf_file(conf_file)
 
+    # if there were specified methods to run
+    global g_cmd_dict
+    if args.methods:
+        methods = args.methods.split(':')
+        print("METHODS = " + str(methods))
+        new_cmd_dict = dict()
+        for m in methods:
+            if m not in g_cmd_dict:
+                raise Exception("Invalid method selected: {}".format(m))
+
+            new_cmd_dict[m] = g_cmd_dict[m]
+
+        g_cmd_dict = new_cmd_dict
+
+
     # process additional program parameters
     global g_timeout
     g_timeout = args.timeout
@@ -308,11 +323,13 @@ Runs the main program according to the arguments obtained from the parser.
         list_of_tasks = prepare_list_of_tasks_from_tasklist(args.tasklist)
     else:  # take the tasks from stdin
         # processing the input
-        if False:  # changed to CSV reader
-            for line in sys.stdin:
-                line = line.rstrip()
-                for k in g_cmd_dict:
-                    list_of_tasks.append({'method': k, 'params': line})
+
+        # if False:  # changed to CSV reader
+        #     for line in sys.stdin:
+        #         line = line.rstrip()
+        #         for k in g_cmd_dict:
+        #             list_of_tasks.append({'method': k, 'params': line})
+
         reader = csv.reader(sys.stdin, delimiter=';')
         for line in reader:
             for k in g_cmd_dict:
@@ -383,6 +400,9 @@ tasks from %(metavar)s.  No input is read.''')
     parser.add_argument('-t', '--timeout', metavar='TIMEOUT', type=int,
         dest='timeout', default = g_timeout,
         help='The timeout in seconds (default: %(default)s)')
+    parser.add_argument('-m', '--methods', metavar='METHODS', type=str,
+        dest='methods',
+        help="Which methods from the configuration file to execute, separated by ';' (default: all)")
 
     args = parser.parse_args()
     run_main(args)
