@@ -204,7 +204,7 @@ def process_result(writer, task_file, result):
 Processes one obtained result (writes it using writer [and flushes, as a good
 christian]).
 """
-    res_string = "UNKNOWN";
+    res_string = "UNKNOWN"
     if 'timeout' in result:
         writer.writerow(['timeout', result['method']] + result['params'])
         task_file.flush()
@@ -300,8 +300,7 @@ Runs the main program according to the arguments obtained from the parser.
     # if there were specified methods to run
     global g_cmd_dict
     if args.methods:
-        methods = args.methods.split(':')
-        print("METHODS = " + str(methods))
+        methods = args.methods.split(';')
         new_cmd_dict = dict()
         for m in methods:
             if m not in g_cmd_dict:

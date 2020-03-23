@@ -15,15 +15,16 @@ def proc_res(fd):
     processes results from file descriptor 'fd'
 """
     reader = csv.reader(
-        fd, delimiter=';', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+        fd, delimiter=';', quotechar='"', doublequote=False, quoting=csv.QUOTE_MINIMAL)
 
     engines = list()
     engines_match = list()
     results = dict()
     for row in reader:
-        eng, pattern = row[1], row[2]
-        if pattern not in results:
-            results[pattern] = dict()
+        eng, pattern, fl = row[1], row[2], row[3]
+        ptrn_fl = (pattern, fl)
+        if ptrn_fl not in results:
+            results[ptrn_fl] = dict()
         if eng not in engines:
             engines.append(eng)
             engines_match.append(eng + '-matches')
@@ -31,33 +32,34 @@ def proc_res(fd):
         if row[0] == 'finished':
             retcode, count_lines, run_time = row[4], row[5], row[7]
 
-            results[pattern][eng] = run_time
-            results[pattern][eng + '-matches'] = count_lines
+            results[ptrn_fl][eng] = run_time
+            results[ptrn_fl][eng + '-matches'] = count_lines
 
         if row[0] == 'error':
-            results[pattern][eng] = 'ERR'
-            results[pattern][eng + '-matches'] = 'ERR'
+            results[ptrn_fl][eng] = 'ERR'
+            results[ptrn_fl][eng + '-matches'] = 'ERR'
 
         if row[0] == 'timeout':
-            results[pattern][eng] = 'TO'
-            results[pattern][eng + '-matches'] = 'TO'
+            results[ptrn_fl][eng] = 'TO'
+            results[ptrn_fl][eng + '-matches'] = 'TO'
 
     list_ptrns = list()
-    for ptrn in results:
-        ls = [ptrn]
+    for ptrn_fl in results:
+        pattern, fl = ptrn_fl
+        ls = [pattern, fl]
         for eng in engines:
-            if eng in results[ptrn]:
-                ls.append(results[ptrn][eng])
+            if eng in results[ptrn_fl]:
+                ls.append(results[ptrn_fl][eng])
             else:
                 ls.append(None)
         for eng in engines_match:
-            if eng in results[ptrn]:
-                ls.append(results[ptrn][eng])
+            if eng in results[ptrn_fl]:
+                ls.append(results[ptrn_fl][eng])
             else:
                 ls.append(None)
         list_ptrns.append(ls)
 
-    header = ['pattern'] + engines + engines_match
+    header = ['pattern', 'file'] + engines + engines_match
 
     if fmt == 'html':
         print(tabulate(list_ptrns, header, tablefmt='html'))
@@ -65,7 +67,8 @@ def proc_res(fd):
         print(tabulate(list_ptrns, header, tablefmt='text'))
     elif fmt == 'csv':
         writer = csv.writer(
-            sys.stdout, delimiter=';', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+            sys.stdout, delimiter=';', quotechar='"', escapechar='\\',
+            doublequote=False, quoting=csv.QUOTE_MINIMAL)
         writer.writerow(header)
         writer.writerows(list_ptrns)
     else:
