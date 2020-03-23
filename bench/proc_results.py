@@ -29,7 +29,7 @@ def proc_res(fd):
             engines_match.append(eng + '-matches')
 
         if row[0] == 'finished':
-            retcode, count_lines, run_time = row[3], row[4], row[6]
+            retcode, count_lines, run_time = row[4], row[5], row[7]
 
             results[pattern][eng] = run_time
             results[pattern][eng + '-matches'] = count_lines
