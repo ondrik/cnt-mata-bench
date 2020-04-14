@@ -172,7 +172,8 @@ Executes one benchmark.
         return result
     except subprocess.TimeoutExpired:
         return {'timeout': True}
-    except:
+    except Exception as e:
+        sys.stderr.write("Exception while executing subprocess: " + str(e) + "\n")
         return {'error': True}
 
 ###########################################
