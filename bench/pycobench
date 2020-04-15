@@ -173,8 +173,7 @@ Executes one benchmark.
     except subprocess.TimeoutExpired:
         return {'timeout': True}
     except Exception as e:
-        sys.stderr.write("Exception while executing subprocess: " + str(e) + "\n")
-        return {'error': True}
+        return {'error': True, 'error_msg': str(e)}
 
 ###########################################
 def merge_two_dicts(x, y):
@@ -211,7 +210,7 @@ christian]).
         task_file.flush()
         res_string = 'TIMEOUT'
     elif 'error' in result:
-        writer.writerow(['error', result['method']] + result['params'])
+        writer.writerow(['error', result['method']] + result['params'] + [result['error_msg']])
         task_file.flush()
         res_string = 'ERROR'
     else:
